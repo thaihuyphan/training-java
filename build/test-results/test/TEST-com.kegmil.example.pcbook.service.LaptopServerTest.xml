@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kegmil.example.pcbook.service.LaptopServerTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2021-11-25T08:18:51" hostname="Admins-MBP-2" time="0.342">
+  <properties/>
+  <testcase name="createLaptopWithAnInvalidID" classname="com.kegmil.example.pcbook.service.LaptopServerTest" time="0.313"/>
+  <testcase name="createLaptopWithAnEmptyID" classname="com.kegmil.example.pcbook.service.LaptopServerTest" time="0.012"/>
+  <testcase name="createLaptopWithAnAlreadyExistsID" classname="com.kegmil.example.pcbook.service.LaptopServerTest" time="0.007"/>
+  <testcase name="createLaptopWithAValidID" classname="com.kegmil.example.pcbook.service.LaptopServerTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopServer start
+INFO: Server started on port: 0
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopService createLaptop
+INFO: Get a create-laptop request with ID: Invalid
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopServer start
+INFO: Server started on port: 0
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopService createLaptop
+INFO: Get a create-laptop request with ID: 
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopService createLaptop
+INFO: Saved laptop with ID: 98cf5ef7-4ce1-4efd-9a35-a87c0c00ebf9
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopServer start
+INFO: Server started on port: 0
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopService createLaptop
+INFO: Get a create-laptop request with ID: dd1caf7e-1bde-43e8-9c50-833b9375a519
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopServer start
+INFO: Server started on port: 0
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopService createLaptop
+INFO: Get a create-laptop request with ID: 37e08b6b-bfea-439d-abfe-3a31f186b19c
+Nov 25, 2021 3:18:51 PM com.kegmil.example.pcbook.service.LaptopService createLaptop
+INFO: Saved laptop with ID: 37e08b6b-bfea-439d-abfe-3a31f186b19c
+]]></system-err>
+</testsuite>

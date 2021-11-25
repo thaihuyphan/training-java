@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package kegmil.pcbook;
+
+option java_package = "com.kegmil.example.pcbook.pb";
+option java_multiple_files = true;
+
+import "laptop_message.proto";
+import "filter_message.proto";
+
+message CreateLaptopRequest {
+  Laptop laptop = 1;
+}
+
+message CreateLaptopResponse {
+  string id = 1;
+}
+
+message SearchLaptopRequest {
+  Filter filter = 1;
+}
+
+message SearchLaptopResponse {
+  Laptop laptop = 1;
+}
+
+service LaptopService {
+  rpc createLaptop(CreateLaptopRequest) returns (CreateLaptopResponse) {};
+  rpc searchLaptop(SearchLaptopRequest) returns (stream SearchLaptopResponse) {};
+}
