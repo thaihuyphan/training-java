@@ -1,15 +1,9 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Filter;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
-import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
-import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.*;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import com.kegmil.example.pcbook.pb.Laptop;
 
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -85,5 +79,54 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
 
     responseObserver.onCompleted();
     logger.info("Search laptop completed");
+  }
+
+  @Override
+  public void updateLaptop(UpdateLaptopRequest request, StreamObserver<UpdateLaptopResponse> responseObserver) {
+      try
+      {
+        laptopStore.update(request.getLaptop());
+      }
+      catch (NotExistException ne)
+      {
+        responseObserver.onError(
+                Status.NOT_FOUND.withDescription(ne.getMessage()).asRuntimeException()
+        );
+        return;
+      }
+      catch (Exception e)
+      {
+        responseObserver.onError(
+                Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException()
+        );
+        return;
+      }
+
+      responseObserver.onNext(UpdateLaptopResponse.newBuilder().build());
+      responseObserver.onCompleted();
+  }
+
+  @Override
+  public void deleteLaptop(DeleteLaptopRequest request, StreamObserver<DeleteLaptopResponse> responseObserver) {
+    try
+    {
+      laptopStore.delete(request.getId());
+    }
+    catch(NotExistException ne)
+    {
+      responseObserver.onError(
+              Status.NOT_FOUND.withDescription(ne.getMessage()).asRuntimeException()
+      );
+      return;
+    }
+    catch(Exception e)
+    {
+      responseObserver.onError(
+              Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException()
+      );
+      return;
+    }
+    responseObserver.onNext(DeleteLaptopResponse.newBuilder().build());
+    responseObserver.onCompleted();
   }
 }

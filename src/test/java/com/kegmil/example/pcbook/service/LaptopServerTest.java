@@ -1,9 +1,6 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Laptop;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
+import com.kegmil.example.pcbook.pb.*;
 import com.kegmil.example.pcbook.sample.Generator;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
@@ -14,6 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -92,5 +91,240 @@ public class LaptopServerTest {
 
     LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
     CreateLaptopResponse response = stub.createLaptop(request);
+  }
+
+  @Test
+  public void searchLaptopWithNonEmptyResult()
+  {
+    // Create some laptops first
+    Generator generator = new Generator();
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+
+    Laptop laptop1 = generator.newLaptop().toBuilder()
+            .setName("laptop1")
+            .setPriceUsd(1999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(1.9)
+                    .setMaxGhz(2.5)
+                    .setNumberCores(4))
+            .setRam(Memory.newBuilder()
+                    .setValue(8)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    Laptop laptop2 = generator.newLaptop().toBuilder()
+            .setName("laptop2")
+            .setPriceUsd(2999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(2.0)
+                    .setMaxGhz(2.8)
+                    .setNumberCores(8))
+            .setRam(Memory.newBuilder()
+                    .setValue(8)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    Laptop laptop3 = generator.newLaptop().toBuilder()
+            .setName("laptop3")
+            .setPriceUsd(3999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(2.5)
+                    .setMaxGhz(3.2)
+                    .setNumberCores(8))
+            .setRam(Memory.newBuilder()
+                    .setValue(16)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    Laptop laptop4 = generator.newLaptop().toBuilder()
+            .setName("laptop4")
+            .setPriceUsd(4999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(4.2)
+                    .setMaxGhz(5.0)
+                    .setNumberCores(20))
+            .setRam(Memory.newBuilder()
+                    .setValue(16)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+
+    List<Laptop> laptopList = Arrays.asList(laptop1, laptop2, laptop3, laptop4);
+    laptopList.forEach(laptop -> {
+      try {
+        store.save(laptop);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+
+    Filter filter = Filter.newBuilder()
+            .setMinCpuCores(8)
+            .setMinCpuGhz(2.1)
+            .setMaxPriceUsd(5000)
+            .setMinRam(Memory.newBuilder()
+                    .setValue(8)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+
+    Iterator<SearchLaptopResponse> response = stub.searchLaptop(SearchLaptopRequest.newBuilder()
+            .setFilter(filter)
+            .build());
+
+    List<String> results = Arrays.asList(laptop3.getId(), laptop4.getId());
+    List<String> actual = new LinkedList<>();
+
+    assertTrue(response.hasNext());
+    while (response.hasNext())
+    {
+      SearchLaptopResponse laptopResponse = response.next();
+      actual.add(laptopResponse.getLaptop().getId());
+    }
+    assertArrayEquals(results.toArray(), actual.toArray());
+  }
+
+  @Test
+  public void searchLaptopWithEmptyResult()
+  {
+    // Create some laptops first
+    Generator generator = new Generator();
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+
+    Laptop laptop1 = generator.newLaptop().toBuilder()
+            .setName("laptop1")
+            .setPriceUsd(1999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(1.9)
+                    .setMaxGhz(2.5)
+                    .setNumberCores(4))
+            .setRam(Memory.newBuilder()
+                    .setValue(8)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    Laptop laptop2 = generator.newLaptop().toBuilder()
+            .setName("laptop2")
+            .setPriceUsd(2999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(2.0)
+                    .setMaxGhz(2.8)
+                    .setNumberCores(8))
+            .setRam(Memory.newBuilder()
+                    .setValue(8)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    Laptop laptop3 = generator.newLaptop().toBuilder()
+            .setName("laptop3")
+            .setPriceUsd(3999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(2.5)
+                    .setMaxGhz(3.2)
+                    .setNumberCores(8))
+            .setRam(Memory.newBuilder()
+                    .setValue(16)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    Laptop laptop4 = generator.newLaptop().toBuilder()
+            .setName("laptop4")
+            .setPriceUsd(4999)
+            .setCpu(CPU.newBuilder()
+                    .setMinGhz(4.2)
+                    .setMaxGhz(5.0)
+                    .setNumberCores(20))
+            .setRam(Memory.newBuilder()
+                    .setValue(16)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+    List<Laptop> laptopList = Arrays.asList(laptop1, laptop2, laptop3, laptop4);
+    laptopList.forEach(laptop -> {
+      try {
+        store.save(laptop);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+
+    Filter filter = Filter.newBuilder()
+            .setMinCpuCores(8)
+            .setMinCpuGhz(2.1)
+            .setMaxPriceUsd(2000)
+            .setMinRam(Memory.newBuilder()
+                    .setValue(16)
+                    .setUnit(Memory.Unit.GIGABYTE)
+                    .build())
+            .build();
+
+    Iterator<SearchLaptopResponse> response = stub.searchLaptop(SearchLaptopRequest.newBuilder()
+            .setFilter(filter)
+            .build());
+
+
+    assertFalse(response.hasNext());
+
+
+  }
+
+  @Test
+  public void updateLaptopWithValidID() throws Exception
+  {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    store.save(laptop);
+
+    Laptop newLaptop = laptop.toBuilder().setBrand("DevMac").build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    stub.updateLaptop(UpdateLaptopRequest.newBuilder()
+            .setLaptop(newLaptop)
+            .build());
+
+    assertEquals("DevMac", store.find(laptop.getId()).getBrand());
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void updateLaptopWithInvalidID() throws Exception
+  {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+
+    Laptop newLaptop = laptop.toBuilder().setId("HelloInvalidID").setBrand("DevMac").build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    stub.updateLaptop(UpdateLaptopRequest.newBuilder()
+            .setLaptop(newLaptop)
+            .build());
+  }
+
+  @Test
+  public void deleteLaptopWithValidID() throws Exception
+  {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    store.save(laptop);
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    stub.deleteLaptop(DeleteLaptopRequest.newBuilder()
+            .setId(laptop.getId())
+            .build());
+
+    assertNull(store.find(laptop.getId()));
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void deleteLaptopWithInvalidID() throws Exception
+  {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop().toBuilder()
+            .setId("HelloInvalidID")
+            .build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    stub.deleteLaptop(DeleteLaptopRequest.newBuilder()
+            .setId(laptop.getId())
+            .build());
   }
 }
