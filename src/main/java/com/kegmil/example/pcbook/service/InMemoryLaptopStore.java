@@ -53,7 +53,8 @@ public class InMemoryLaptopStore implements LaptopStore {
             throw new NotExistException("Id " + laptop.getId() + " not found");
         }
 
-        data.put(laptop.getId(), laptop);
+        Laptop laptopCopy = laptop.toBuilder().build();
+        data.put(laptop.getId(), laptopCopy);
     }
 
     @Override
