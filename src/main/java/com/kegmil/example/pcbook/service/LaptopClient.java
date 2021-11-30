@@ -1,16 +1,9 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Filter;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
-import com.kegmil.example.pcbook.pb.Memory;
-import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
-import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.*;
 import com.kegmil.example.pcbook.sample.Generator;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import com.kegmil.example.pcbook.pb.Laptop;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -71,6 +64,49 @@ public class LaptopClient {
     logger.info("Search completed");
   }
 
+  private void deleteLaptop(Laptop laptop) {
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setLaptop(laptop).build();
+
+    try {
+      blockingStub.deleteLaptop(request);
+    } catch (StatusRuntimeException e) {
+      if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+        logger.info("Laptop id does not exists.");
+        return;
+      }
+      logger.log(Level.SEVERE, "request failed: ", e.getMessage());
+      return;
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "request failed: " + e.getMessage());
+      return;
+    }
+
+    logger.info("Laptop deleted.");
+
+  }
+
+  private void updateLaptop(Laptop laptop) {
+    UpdateLaptopRequest request = UpdateLaptopRequest.newBuilder().setLaptop(laptop).build();
+    UpdateLaptopResponse response;
+
+    try {
+      response = blockingStub.updateLaptop(request);
+    }catch (StatusRuntimeException e) {
+      if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+        logger.info("Laptop id does not exists.");
+        return;
+      }
+      logger.log(Level.SEVERE, "request failed: ", e);
+      return;
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "request failed: " + e.getMessage());
+      return;
+    }
+
+    logger.info("laptop updated has ID: " + response.getId());
+  }
+
+
   public static void main(String[] args) throws InterruptedException {
     LaptopClient client = new LaptopClient("0.0.0.0", 6565);
     Generator generator = new Generator();
@@ -90,6 +126,16 @@ public class LaptopClient {
           .build();
 
       client.searchLaptop(filter);
+
+      Laptop other = Laptop.newBuilder()
+              .setId("668f8fd5-efb5-4276-8fbe-3cd8746e1cdd")
+              .build();
+      client.deleteLaptop(other);
+
+      Laptop laptop = generator.newLaptop();
+      client.createLaptop(laptop);
+      laptop = laptop.toBuilder().setBrand("Hello").build();
+      client.updateLaptop(laptop);
 
     } finally {
       client.shutdown();
