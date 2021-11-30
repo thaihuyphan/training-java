@@ -23,8 +23,27 @@ message SearchLaptopRequest {
 message SearchLaptopResponse {
   Laptop laptop = 1;
 }
+//test
+message DeleteLaptopRequest{
+  string id = 1;
+}
+
+message DeleteLaptopResponse{
+  Laptop laptop = 1;
+}
+
+message UpdateLaptopRequest{
+  Laptop laptop = 1;
+}
+
+message UpdateLaptopResponse{
+  Laptop laptop = 1;
+}
 
 service LaptopService {
   rpc createLaptop(CreateLaptopRequest) returns (CreateLaptopResponse) {};
   rpc searchLaptop(SearchLaptopRequest) returns (stream SearchLaptopResponse) {};
+  //test
+  rpc deleteLaptop(DeleteLaptopRequest) returns (DeleteLaptopResponse) {};
+  rpc updateLaptop(UpdateLaptopRequest) returns (UpdateLaptopResponse) {};
 }

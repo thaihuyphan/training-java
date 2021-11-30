@@ -1,15 +1,9 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Filter;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
-import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
-import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.*;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import com.kegmil.example.pcbook.pb.Laptop;
 
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -85,5 +79,53 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
 
     responseObserver.onCompleted();
     logger.info("Search laptop completed");
+  }
+
+  @Override
+  public void deleteLaptop(DeleteLaptopRequest request, StreamObserver<DeleteLaptopResponse> responseObserver){
+    String cid = request.getId();
+    logger.info("Delete the laptop request at ID: " + cid);
+
+    Laptop laptop = laptopStore.find(cid);  //Nếu không tìm thấy ID thì thế nào?
+    if (laptop == null){
+      logger.info("Not found laptop at ID: " + cid);
+      responseObserver.onError(Status.NOT_FOUND.withDescription("Can not found laptop at ID: "+cid).asRuntimeException());
+      return;
+    }
+
+    Laptop reslaptop;
+    try {
+      reslaptop = laptopStore.move(laptop);
+    } catch (NullPointerException e) {
+      responseObserver.onError(
+              Status.INTERNAL.withDescription(e.getMessage()).asException());
+      return;
+    }
+
+    DeleteLaptopResponse response = DeleteLaptopResponse.newBuilder().setLaptop(reslaptop).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+
+    logger.info("Deleted laptop at ID: " + reslaptop.getId());
+  }
+
+  @Override
+  public void updateLaptop(UpdateLaptopRequest request, StreamObserver<UpdateLaptopResponse> responseObserver){
+    Laptop laptop = laptopStore.find(request.getLaptop().getId());
+    Laptop LapRes;
+    //tìm thấy laptop có id phù hợp
+    if (laptop == null){
+      logger.info("Not found laptop at this ID");
+      responseObserver.onError(Status.NOT_FOUND.withDescription("Can not found laptop at ID: "+request.getLaptop().getId()).asRuntimeException());
+      return;
+    }
+
+    LapRes = laptopStore.update(request.getLaptop());
+
+    UpdateLaptopResponse response = UpdateLaptopResponse.newBuilder().setLaptop(LapRes).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+
+    logger.info("Update laptop at ID: " + LapRes.getId());
   }
 }

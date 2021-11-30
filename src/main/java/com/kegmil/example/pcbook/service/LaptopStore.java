@@ -7,5 +7,9 @@ public interface LaptopStore {
   void save(Laptop laptop) throws Exception;
   Laptop find(String id);
   void search(Filter filter, LaptopStream stream);
+
+  //test
+  Laptop move(Laptop laptop) throws RuntimeException;
+  Laptop update(Laptop laptop);
 }
 

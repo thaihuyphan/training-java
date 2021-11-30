@@ -47,6 +47,25 @@ public class InMemoryLaptopStore implements LaptopStore {
     }
   }
 
+  //test
+  @Override
+  public Laptop move(Laptop laptop) throws RuntimeException {
+
+    if (data.containsKey(laptop.getId())) {   //Do đã thực hiện hàm find nên đã bắt exception trước rồi
+      Laptop laptop1 = data.remove(laptop.getId());
+      return laptop1.toBuilder().build();
+    } else {
+      throw new NullPointerException();       //để cho vui, tí rảnh quay lại chỉnh
+    }
+  }
+
+  @Override
+  public Laptop update(Laptop laptop) {
+    Laptop other = laptop.toBuilder().build();
+    data.replace(other.getId(), other);
+    return data.get(laptop.getId()).toBuilder().build();
+  }
+
   private boolean isQualified(Filter filter, Laptop laptop) {
     if (laptop.getPriceUsd() > filter.getMaxPriceUsd()) {
       return false;
