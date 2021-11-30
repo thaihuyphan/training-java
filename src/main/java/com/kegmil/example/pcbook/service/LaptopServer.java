@@ -45,7 +45,7 @@ public class LaptopServer {
     }
   }
 
-  private void blockUntilShutdown() throws InterruptedException {
+  public void blockUntilShutdown() throws InterruptedException {
     if (server != null) {
       server.awaitTermination();
     }
