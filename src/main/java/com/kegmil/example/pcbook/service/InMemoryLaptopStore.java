@@ -48,18 +48,20 @@ public class InMemoryLaptopStore implements LaptopStore {
   }
 
     @Override
-    public void update(Laptop laptop) throws Exception {
-        if(!data.containsKey(laptop.getId())) {
+    public Laptop update(Laptop laptop) {
+        if (!data.containsKey(laptop.getId())) {
             throw new NotExistException("Id " + laptop.getId() + " not found");
         }
 
         Laptop laptopCopy = laptop.toBuilder().build();
         data.put(laptop.getId(), laptopCopy);
+
+        return laptopCopy;
     }
 
     @Override
     public void delete(String id) {
-        if(!data.containsKey(id)) {
+        if (!data.containsKey(id)) {
             throw new NotExistException("Id " + id + " not found");
         }
 

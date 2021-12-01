@@ -233,11 +233,12 @@ public class LaptopServerTest {
     Laptop newLaptop = laptop.toBuilder().setBrand("DevMac").build();
 
     LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
-    stub.updateLaptop(UpdateLaptopRequest.newBuilder()
+    Laptop updatedLaptop = stub.updateLaptop(UpdateLaptopRequest.newBuilder()
             .setLaptop(newLaptop)
-            .build());
+            .build()).getLaptop();
 
     assertEquals("DevMac", store.find(laptop.getId()).getBrand());
+    assertEquals("DevMac", updatedLaptop.getBrand());
   }
 
   @Test(expected = StatusRuntimeException.class)

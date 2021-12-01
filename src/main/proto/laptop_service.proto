@@ -29,7 +29,7 @@ message UpdateLaptopRequest {
 }
 
 message UpdateLaptopResponse {
-
+  Laptop laptop = 1;
 }
 
 message DeleteLaptopRequest {

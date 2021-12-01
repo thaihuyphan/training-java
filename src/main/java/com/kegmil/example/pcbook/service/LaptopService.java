@@ -1,6 +1,16 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.*;
+import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
+import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
+import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
+import com.kegmil.example.pcbook.pb.UpdateLaptopResponse;
+import com.kegmil.example.pcbook.pb.UpdateLaptopRequest;
+import com.kegmil.example.pcbook.pb.DeleteLaptopResponse;
+import com.kegmil.example.pcbook.pb.DeleteLaptopRequest;
+import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
+import com.kegmil.example.pcbook.pb.Laptop;
+import com.kegmil.example.pcbook.pb.Filter;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -83,27 +93,25 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
 
   @Override
   public void updateLaptop(UpdateLaptopRequest request, StreamObserver<UpdateLaptopResponse> responseObserver) {
-      try
+
+    try
       {
-        laptopStore.update(request.getLaptop());
+        Laptop updatedLaptop = laptopStore.update(request.getLaptop());
+        responseObserver.onNext(UpdateLaptopResponse.newBuilder().setLaptop(updatedLaptop).build());
+        responseObserver.onCompleted();
       }
       catch (NotExistException ne)
       {
         responseObserver.onError(
                 Status.NOT_FOUND.withDescription(ne.getMessage()).asRuntimeException()
         );
-        return;
       }
       catch (Exception e)
       {
         responseObserver.onError(
                 Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException()
         );
-        return;
       }
-
-      responseObserver.onNext(UpdateLaptopResponse.newBuilder().build());
-      responseObserver.onCompleted();
   }
 
   @Override
@@ -111,22 +119,21 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
     try
     {
       laptopStore.delete(request.getId());
+      responseObserver.onNext(DeleteLaptopResponse.newBuilder().build());
+      responseObserver.onCompleted();
     }
-    catch(NotExistException ne)
+    catch (NotExistException ne)
     {
       responseObserver.onError(
               Status.NOT_FOUND.withDescription(ne.getMessage()).asRuntimeException()
       );
-      return;
     }
-    catch(Exception e)
+    catch (Exception e)
     {
       responseObserver.onError(
               Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException()
       );
-      return;
     }
-    responseObserver.onNext(DeleteLaptopResponse.newBuilder().build());
-    responseObserver.onCompleted();
+
   }
 }
