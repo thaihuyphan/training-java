@@ -1,9 +1,6 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Laptop;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
+import com.kegmil.example.pcbook.pb.*;
 import com.kegmil.example.pcbook.sample.Generator;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
@@ -14,6 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.Iterator;
 
 import static org.junit.Assert.*;
 
@@ -81,6 +80,7 @@ public class LaptopServerTest {
 
     LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
     CreateLaptopResponse response = stub.createLaptop(request);
+    assertNotNull(response);
   }
 
   @Test(expected = StatusRuntimeException.class)
@@ -92,5 +92,87 @@ public class LaptopServerTest {
 
     LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
     CreateLaptopResponse response = stub.createLaptop(request);
+    assertNotNull(response);
+  }
+
+  @Test
+  public void searchLaptopWithAValidFilter() {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+
+    Filter filter = Filter.newBuilder()
+            .setMinRam(laptop.getRam())
+            .build();
+
+    SearchLaptopRequest request = SearchLaptopRequest.newBuilder().setFilter(filter).build();
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    Iterator<SearchLaptopResponse> responseIterator = stub.searchLaptop(request);
+
+    while (responseIterator.hasNext()) {
+      SearchLaptopResponse response = responseIterator.next();
+      assertNotNull(response);
+
+      Laptop other = response.getLaptop();
+      assertEquals(laptop.getId(), other.getId());
+    }
+  }
+
+  @Test
+  public void searchLaptopWithAnEmptyFilter() {
+    Filter filter = Filter.newBuilder()
+            .build();
+
+    SearchLaptopRequest request = SearchLaptopRequest.newBuilder().setFilter(filter).build();
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    Iterator<SearchLaptopResponse> responseIterator = stub.searchLaptop(request);
+
+    //
+    while (responseIterator.hasNext()) {
+      SearchLaptopResponse response = responseIterator.next();
+      assertNotNull(response);
+
+      Laptop other = response.getLaptop();
+      assertFalse(other.getId().isEmpty());
+    }
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void deleteLaptopWithAValidID() {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setLaptop(laptop).build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    stub.deleteLaptop(request);
+    assertNull(store.find(laptop.getId()));
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void deleteLaptopWithNonExistLaptop() {
+    Laptop laptop = Laptop.newBuilder()
+            .setBrand("Non-exist")
+            .build();
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setLaptop(laptop).build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    stub.deleteLaptop(request);
+    //assert??
+  }
+
+  @Test
+  public void updateLaptopWithAValidLaptop() {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+
+    UpdateLaptopRequest request = UpdateLaptopRequest.newBuilder().setLaptop(laptop).build();
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+
+    stub.createLaptop(CreateLaptopRequest.newBuilder().setLaptop(laptop).build());
+
+    laptop = laptop.toBuilder().setBrand("Hello").build();
+    UpdateLaptopResponse response = stub.updateLaptop(request);
+
+    assertNotNull(response);
+    assertEquals(laptop.getId(), response.getLaptop().getId());
   }
 }
