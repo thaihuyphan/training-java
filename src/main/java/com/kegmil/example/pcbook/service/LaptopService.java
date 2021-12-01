@@ -150,10 +150,10 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
       return;
     }
 
-    UpdateLaptopResponse response = UpdateLaptopResponse.newBuilder().setId(other.getId()).build();
+    UpdateLaptopResponse response = UpdateLaptopResponse.newBuilder().setLaptop(other).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
 
-    logger.info("Update laptop with ID: " + id);
+    logger.info("Update laptop with ID: " + response);
   }
 }

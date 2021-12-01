@@ -34,7 +34,7 @@ message UpdateLaptopRequest {
 }
 
 message UpdateLaptopResponse {
-  string id = 1;
+  Laptop laptop = 1;
 }
 
 service LaptopService {

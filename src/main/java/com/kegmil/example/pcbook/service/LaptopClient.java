@@ -103,7 +103,7 @@ public class LaptopClient {
       return;
     }
 
-    logger.info("laptop updated has ID: " + response.getId());
+    logger.info("laptop updated has ID: " + response);
   }
 
 
