@@ -47,6 +47,24 @@ public class InMemoryLaptopStore implements LaptopStore {
     }
   }
 
+  @Override
+  public void update(Laptop laptop) {
+    if(!data.containsKey(laptop.getId())) {
+      throw new NotExistException("Laptop ID is not exist");
+    } else {
+      data.put(laptop.getId(), laptop);
+    }
+  }
+
+  @Override
+  public void delete(String id) {
+    if(!data.containsKey(id)) {
+      throw new NotExistException("Laptop ID is not exist");
+    } else {
+      data.remove(id);
+    }
+  }
+
   private boolean isQualified(Filter filter, Laptop laptop) {
     if (laptop.getPriceUsd() > filter.getMaxPriceUsd()) {
       return false;
