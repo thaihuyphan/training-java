@@ -24,7 +24,42 @@ message SearchLaptopResponse {
   Laptop laptop = 1;
 }
 
+message DeleteLaptopRequest {
+  string id = 1;
+}
+
+message DeleteLaptopResponse {
+    string message = 1;
+}
+message UpdateLaptopRequest {
+  Laptop laptop = 1;
+}
+
+message UpdateLaptopResponse {
+  Laptop laptop = 1;
+}
+
+message DeleteLaptopByFilterRequest {
+  Filter filter = 1;
+}
+
+message DeleteLaptopByFilterResponse {
+  string message = 1;
+}
+
+message DeleteLaptopByManyIdRequest {
+  repeated string listId = 1;
+}
+
+message DeleteLaptopByManyIdResponse {
+  string message = 1;
+}
+
 service LaptopService {
   rpc createLaptop(CreateLaptopRequest) returns (CreateLaptopResponse) {};
   rpc searchLaptop(SearchLaptopRequest) returns (stream SearchLaptopResponse) {};
+  rpc updateLaptop(UpdateLaptopRequest) returns (UpdateLaptopResponse) {};
+  rpc deleteLaptopById(DeleteLaptopRequest) returns (DeleteLaptopResponse) {};
+  rpc deleteLaptopByFilter(DeleteLaptopByFilterRequest) returns (DeleteLaptopByFilterResponse){};
+  rpc deleteLaptopByManyId(DeleteLaptopByManyIdRequest) returns (DeleteLaptopByManyIdResponse) {};
 }
