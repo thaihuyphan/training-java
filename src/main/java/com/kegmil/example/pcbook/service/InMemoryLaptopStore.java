@@ -17,7 +17,7 @@ public class InMemoryLaptopStore implements LaptopStore {
   }
 
   @Override
-  public void save(Laptop laptop) throws Exception {
+  public void save(Laptop laptop) {
     if (data.containsKey(laptop.getId())) {
       throw new AlreadyExistException("laptop Id already exists");
     }
@@ -36,6 +36,28 @@ public class InMemoryLaptopStore implements LaptopStore {
     // deep copy
     return data.get(id).toBuilder().build();
   }
+
+  @Override
+  public void delete(String id) {
+    if(!data.containsKey(id)) {
+      throw new NotFoundException("laptop Id does not exists");
+    }
+
+    data.remove(id);
+  }
+
+  @Override
+  public Laptop update(Laptop laptop) {
+    if(!data.containsKey(laptop.getId())) {
+      throw new NotFoundException("laptop Id does not exists");
+    }
+
+    Laptop other = laptop.toBuilder().build();
+    data.put(laptop.getId(), other);
+
+    return other;
+  }
+
 
   @Override
   public void search(Filter filter, LaptopStream stream) {
