@@ -1,17 +1,12 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Filter;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
-import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
-import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.*;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import com.kegmil.example.pcbook.pb.Laptop;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
@@ -85,5 +80,99 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
 
     responseObserver.onCompleted();
     logger.info("Search laptop completed");
+  }
+
+  @Override
+  public void updateLaptop(UpdateLaptopRequest request, StreamObserver<UpdateLaptopResponse> responseObserver) {
+    try {
+      // update luôn cái laptop
+      logger.info("Got a laptop need edit: " + request.getLaptop() );
+      Laptop laptopUpdate = request.getLaptop();
+      laptopStore.update(laptopUpdate, laptop -> {
+        UpdateLaptopResponse response = UpdateLaptopResponse.newBuilder().setLaptop(laptop).build();
+        responseObserver.onNext(response);
+      });
+    }
+    catch (NotFoundExistException e){
+      responseObserver.onError( Status.NOT_FOUND
+              .withDescription(e.getMessage())
+              .asRuntimeException());
+    }
+
+
+    responseObserver.onCompleted();
+    logger.info("Update laptop completed");
+  }
+
+  @Override
+  public void deleteLaptopById(DeleteLaptopRequest request, StreamObserver<DeleteLaptopResponse> responseObserver) {
+
+   try {
+     logger.info("Got a laptop need delete: " + request.getId() );
+
+     laptopStore.deleteById(request.getId());
+
+       DeleteLaptopResponse response = DeleteLaptopResponse.newBuilder().setMessage("Delete Success").build();
+       responseObserver.onNext(response);
+
+
+   }
+   catch (NotFoundExistException e){
+     responseObserver.onError( Status.NOT_FOUND
+             .withDescription(e.getMessage())
+             .asRuntimeException());
+
+   }
+
+
+    responseObserver.onCompleted();
+    logger.info("Delete laptop completed");
+
+  }
+
+  @Override
+  public void deleteLaptopByFilter(DeleteLaptopByFilterRequest request, StreamObserver<DeleteLaptopByFilterResponse> responseObserver) {
+    try {
+      logger.info("Got a laptop need delete: " + request.getFilter() );
+
+      int numberLaptopDeleted = laptopStore.deleteByFilter(request.getFilter());
+
+      DeleteLaptopByFilterResponse response = DeleteLaptopByFilterResponse.newBuilder().setMessage("Deleted " + numberLaptopDeleted).build();
+      responseObserver.onNext(response);
+
+    }
+    catch (NotFoundExistException e){
+      responseObserver.onError( Status.NOT_FOUND
+              .withDescription(e.getMessage())
+              .asRuntimeException());
+
+    }
+
+
+    responseObserver.onCompleted();
+    logger.info("Deleted laptop by filter completed");
+  }
+
+  @Override
+  public void deleteLaptopByManyId(DeleteLaptopByManyIdRequest request, StreamObserver<DeleteLaptopByManyIdResponse> responseObserver) {
+    try {
+      logger.info("Got a id of laptop need delete: " + request.getListIdList());
+
+      AtomicInteger numberLaptopDeleted = laptopStore.deleteByIds(request.getListIdList().stream());
+
+      DeleteLaptopByManyIdResponse response = DeleteLaptopByManyIdResponse.newBuilder().setMessage("Deleted " + numberLaptopDeleted).build();
+      responseObserver.onNext(response);
+
+    }
+    catch (NotFoundExistException e){
+      responseObserver.onError( Status.NOT_FOUND
+              .withDescription(e.getMessage())
+              .asRuntimeException());
+
+    }
+
+
+    responseObserver.onCompleted();
+    logger.info("Deleted laptop by filter completed");
   }
 }

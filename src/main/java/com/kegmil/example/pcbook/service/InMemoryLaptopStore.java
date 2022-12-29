@@ -4,9 +4,13 @@ import com.kegmil.example.pcbook.pb.Filter;
 import com.kegmil.example.pcbook.pb.Laptop;
 import com.kegmil.example.pcbook.pb.Memory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class InMemoryLaptopStore implements LaptopStore {
 
@@ -45,6 +49,68 @@ public class InMemoryLaptopStore implements LaptopStore {
         stream.send(laptop.toBuilder().build());
       }
     }
+  }
+
+  /*
+  First need to find the laptop by id. If it has in data, update. Else throw exception not found
+   */
+  @Override
+  public void update(Laptop laptop, LaptopStream stream) {
+
+      if(data.containsKey(laptop.getId())){
+        data.replace(laptop.getId(), laptop);
+        stream.send((laptop.toBuilder().build()));
+      }
+      else {
+        throw new NotFoundExistException("Not found laptop which have update");
+      }
+
+  }
+
+  @Override
+  public void deleteById(String id) {
+    if(id ==null){
+      throw new NotFoundExistException("Id not null please");
+    }
+    else{
+      Laptop laptop = find(id);
+      //kiem tra co laptop nay hay khong
+      if(laptop != null){
+        data.remove(laptop.getId(), laptop);
+
+      }
+      else{
+        throw new NotFoundExistException("Don't have the laptop you need delete");
+      }
+    }
+
+  }
+
+  @Override
+  public int deleteByFilter(Filter filter) {
+    List<Laptop> laptops = new ArrayList<Laptop>();
+
+    search(filter, laptop -> {
+      laptops.add(laptop);
+    });
+    int numberOfLaptopDeleted = laptops.size();
+    laptops.forEach(laptop -> {
+      if(data.containsKey(laptop.getId())){
+        data.remove(laptop.getId());
+
+      }
+    });
+    return numberOfLaptopDeleted;
+  }
+
+  @Override
+  public AtomicInteger deleteByIds(Stream<String> ids) {
+    AtomicInteger numberOfLaptopDeleted = new AtomicInteger();
+    ids.forEach(id -> {
+      deleteById(id);
+      numberOfLaptopDeleted.getAndIncrement();
+    });
+    return numberOfLaptopDeleted;
   }
 
   private boolean isQualified(Filter filter, Laptop laptop) {
