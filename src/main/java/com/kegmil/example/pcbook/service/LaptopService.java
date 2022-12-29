@@ -1,18 +1,13 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Filter;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
-import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
-import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.*;
 import io.grpc.Context;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import com.kegmil.example.pcbook.pb.Laptop;
 
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
 
@@ -85,5 +80,69 @@ public class LaptopService extends LaptopServiceGrpc.LaptopServiceImplBase {
 
     responseObserver.onCompleted();
     logger.info("Search laptop completed");
+  }
+
+  @Override
+  public void deleteLaptop(DeleteLaptopRequest request, StreamObserver<DeleteLaptopResponse> responseObserver) {
+    String laptopId = request.getId();
+    logger.info("Get a delete-laptop request with ID: " + laptopId);
+
+    if (Context.current().isCancelled()) {
+      logger.info("Request is cancelled");
+      responseObserver.onError(Status.CANCELLED.withDescription("Request is cancelled").asRuntimeException());
+    }
+
+    try {
+      laptopStore.delete(laptopId);
+    } catch(NotFoundException e) {
+      responseObserver.onError(
+              Status.NOT_FOUND
+                      .withDescription(e.getMessage())
+                      .asRuntimeException());
+      return;
+    } catch(Exception e) {
+      responseObserver.onError(
+              Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+      return;
+    }
+
+    DeleteLaptopResponse response = DeleteLaptopResponse.newBuilder().setId(laptopId).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+
+    logger.info("Delete laptop completed");
+  }
+
+  @Override
+  public void updateLaptop(UpdateLaptopRequest request, StreamObserver<UpdateLaptopResponse> responseObserver) {
+    Laptop laptop = request.getLaptop();
+    String laptopId = laptop.getId();
+    logger.info("Get a update-laptop request with ID: " + laptopId);
+
+    if (Context.current().isCancelled()) {
+      logger.info("Request is cancelled");
+      responseObserver.onError(Status.CANCELLED.withDescription("Request is cancelled").asRuntimeException());
+    }
+
+    Laptop other = laptop.toBuilder().build();
+    try {
+      laptopStore.update(other);
+    } catch(NotFoundException e) {
+      responseObserver.onError(
+              Status.NOT_FOUND
+                      .withDescription(e.getMessage())
+                      .asRuntimeException());
+      return;
+    } catch(Exception e) {
+      responseObserver.onError(
+              Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
+      return;
+    }
+
+    UpdateLaptopResponse response = UpdateLaptopResponse.newBuilder().setLaptop(other).build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+
+    logger.info("Update laptop completed");
   }
 }

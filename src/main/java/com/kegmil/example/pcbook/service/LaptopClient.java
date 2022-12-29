@@ -1,16 +1,9 @@
 package com.kegmil.example.pcbook.service;
 
-import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
-import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
-import com.kegmil.example.pcbook.pb.Filter;
-import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
-import com.kegmil.example.pcbook.pb.Memory;
-import com.kegmil.example.pcbook.pb.SearchLaptopRequest;
-import com.kegmil.example.pcbook.pb.SearchLaptopResponse;
+import com.kegmil.example.pcbook.pb.*;
 import com.kegmil.example.pcbook.sample.Generator;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import com.kegmil.example.pcbook.pb.Laptop;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -70,6 +63,49 @@ public class LaptopClient {
 
     logger.info("Search completed");
   }
+
+  private void deleteLaptop(String laptopId) {
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setId(laptopId).build();
+    DeleteLaptopResponse response;
+
+    try {
+      response = blockingStub.deleteLaptop(request);
+    } catch (StatusRuntimeException e) {
+      if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+        logger.info("laptop ID does not exists");
+        return;
+      }
+      logger.log(Level.SEVERE, "request failed: " + e.getMessage());
+      return;
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "request failed: " + e.getMessage());
+      return;
+    }
+
+    logger.info("laptop deleted with ID: " + response.getId());
+  }
+
+  private void updateLaptop(Laptop laptop) {
+    UpdateLaptopRequest request = UpdateLaptopRequest.newBuilder().setLaptop(laptop).build();
+    UpdateLaptopResponse response;
+
+     try {
+       response = blockingStub.updateLaptop(request);
+     } catch (StatusRuntimeException e) {
+       if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+         logger.info("laptop ID does not exists");
+         return;
+       }
+       logger.log(Level.SEVERE, "request failed: " + e.getMessage());
+       return;
+     } catch (Exception e) {
+       logger.log(Level.SEVERE, "request failed: " + e.getMessage());
+       return;
+     }
+
+    logger.info("laptop updated: " + response.getLaptop());
+  }
+
 
   public static void main(String[] args) throws InterruptedException {
     LaptopClient client = new LaptopClient("0.0.0.0", 6565);
