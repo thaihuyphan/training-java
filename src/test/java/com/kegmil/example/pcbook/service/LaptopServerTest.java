@@ -2,8 +2,12 @@ package com.kegmil.example.pcbook.service;
 
 import com.kegmil.example.pcbook.pb.CreateLaptopRequest;
 import com.kegmil.example.pcbook.pb.CreateLaptopResponse;
+import com.kegmil.example.pcbook.pb.DeleteLaptopRequest;
+import com.kegmil.example.pcbook.pb.DeleteLaptopResponse;
 import com.kegmil.example.pcbook.pb.Laptop;
 import com.kegmil.example.pcbook.pb.LaptopServiceGrpc;
+import com.kegmil.example.pcbook.pb.UpdateLaptopRequest;
+import com.kegmil.example.pcbook.pb.UpdateLaptopResponse;
 import com.kegmil.example.pcbook.sample.Generator;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
@@ -92,5 +96,74 @@ public class LaptopServerTest {
 
     LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
     CreateLaptopResponse response = stub.createLaptop(request);
+  }
+
+  @Test
+  public void deleteLaptopWithAValidID() throws Exception {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    store.save(laptop);
+
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setId(laptop.getId()).build();
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    DeleteLaptopResponse response = stub.deleteLaptop(request);
+    assertNotNull(response);
+    assertEquals(laptop.getId(), response.getId());
+
+    Laptop found = store.find(response.getId());
+    assertNull(found);
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void deleteLaptopWithAnInvalidID() {
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setId("Invalid").build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    DeleteLaptopResponse response = stub.deleteLaptop(request);
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void deleteLaptopWithAnEmptyID() {
+    DeleteLaptopRequest request = DeleteLaptopRequest.newBuilder().setId("").build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    DeleteLaptopResponse response = stub.deleteLaptop(request);
+  }
+
+  @Test
+  public void updateLaptopWithAValidID() throws Exception {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    store.save(laptop);
+    UpdateLaptopRequest request = UpdateLaptopRequest.newBuilder().setLaptop(laptop).build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    UpdateLaptopResponse response = stub.updateLaptop(request);
+    assertNotNull(response);
+    assertEquals(laptop.getId(), response.getLaptop().getId());
+
+    Laptop found = store.find(response.getLaptop().getId());
+    assertNotNull(found);
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void updateLaptopWithAnInvalidID() {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    UpdateLaptopRequest request = UpdateLaptopRequest.newBuilder().setLaptop(laptop).build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    UpdateLaptopResponse response = stub.updateLaptop(request);
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void updateLaptopWithAnEmptyID() {
+    Generator generator = new Generator();
+    Laptop laptop = generator.newLaptop();
+    Laptop other = laptop.toBuilder().setId("").build();
+    UpdateLaptopRequest request = UpdateLaptopRequest.newBuilder().setLaptop(other).build();
+
+    LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
+    UpdateLaptopResponse response = stub.updateLaptop(request);
   }
 }
