@@ -81,6 +81,7 @@ public class LaptopServerTest {
 
     LaptopServiceGrpc.LaptopServiceBlockingStub stub = LaptopServiceGrpc.newBlockingStub(channel);
     CreateLaptopResponse response = stub.createLaptop(request);
+    assertNotNull(response);
   }
 
   @Test(expected = StatusRuntimeException.class)

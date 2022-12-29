@@ -69,15 +69,21 @@ public class InMemoryLaptopStore implements LaptopStore {
 
   @Override
   public void deleteById(String id) {
-    Laptop laptop = find(id);
-    //kiem tra co laptop nay hay khong
-    if(laptop != null){
-      data.remove(laptop.getId(), laptop);
-
+    if(id ==null){
+      throw new NotFoundExistException("Id not null please");
     }
     else{
-      throw new NotFoundExistException("Don't have the laptop you need delete");
+      Laptop laptop = find(id);
+      //kiem tra co laptop nay hay khong
+      if(laptop != null){
+        data.remove(laptop.getId(), laptop);
+
+      }
+      else{
+        throw new NotFoundExistException("Don't have the laptop you need delete");
+      }
     }
+
   }
 
   @Override
@@ -101,10 +107,8 @@ public class InMemoryLaptopStore implements LaptopStore {
   public AtomicInteger deleteByIds(Stream<String> ids) {
     AtomicInteger numberOfLaptopDeleted = new AtomicInteger();
     ids.forEach(id -> {
-      if(data.containsKey(id)){
-        data.remove(id);
-        numberOfLaptopDeleted.getAndIncrement();
-      }
+      deleteById(id);
+      numberOfLaptopDeleted.getAndIncrement();
     });
     return numberOfLaptopDeleted;
   }
